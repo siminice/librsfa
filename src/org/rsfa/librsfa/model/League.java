@@ -5,10 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.rsfa.librsfa.util.Constants;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
@@ -26,7 +23,6 @@ public class League {
   @Getter private int[] rank;
   @Getter private Stat[] stat;
   @Getter @Setter private String[] deco;
-  @Getter @Setter private int[] pen;
   @Getter @Setter private int[] pdt;
   @Getter private Results res;
   @Getter private int numr;
@@ -55,7 +51,6 @@ public class League {
       id = new int[size];
       rank = new int[size];
       stat = new Stat[size];
-      pen = new int[size];
       pdt = new int[size];
       deco = new String[size];
 
@@ -75,12 +70,15 @@ public class League {
       format.setReleg(releg);
 
       for (int i = 0; i < size; i++) {
+        stat[i] = new Stat();
         line = br.readLine().trim();
         final StringTokenizer tkt = new StringTokenizer(line);
         final int ntk = tkt.countTokens();
         if (ntk >= 8) {
           final String sid = tkt.nextToken();
           final int x = Integer.parseInt(sid);
+          id[i] = x;
+          stat[i].setId(id[i]);
           tkt.nextToken(); // dummy
           int w = Integer.parseInt(tkt.nextToken());
           int d = Integer.parseInt(tkt.nextToken());
@@ -88,19 +86,16 @@ public class League {
           int s = Integer.parseInt(tkt.nextToken());
           int r = Integer.parseInt(tkt.nextToken());
           tkt.nextToken(); // pts
-          id[i] = x;
 
           if (ntk >= 10) {
-            pen[i] = Integer.parseInt(tkt.nextToken());
+            stat[i].setPen(Integer.parseInt(tkt.nextToken()));
             pdt[i] = Integer.parseInt(tkt.nextToken());
           } else {
-            pen[i] = 0; pdt[i] = 0;
+            pdt[i] = 0;
           }
           if (ntk >= 11) deco[i] = tkt.nextToken(); else deco[i] = "";
+          rank[i] = i;
         }
-        stat[i] = new Stat();
-        stat[i].setId(id[i]);
-        rank[i] = i;
       }
 
       res = new Results(size, numr);
@@ -118,8 +113,6 @@ public class League {
             if (2 * j + 1 < tkr.length) {
               int rz = Integer.parseInt(tkr[2 * j]);
               int s = Integer.parseInt(tkr[2 * j + 1]);
-              stat[i].addResult(s);
-              stat[j].addReverseResult(s);
               FixtureResult fr = FixtureResult.of(i, j, metadata.getYear(), rz, s);
               if (s>=0) { res.add(fr); }
             }
@@ -132,7 +125,22 @@ public class League {
     }
   }
 
-  public void save() {
+  public boolean save() {
+    String newfilename = filename + ".new";
+    try {
+      String payload = this.serialize();
+      PrintWriter writer = new PrintWriter(newfilename);
+      writer.print(payload);
+      writer.close();
+      File oldFile = new File(filename);
+      File newFile = new File(newfilename);
+      File backupFile = new File(filename + ".old");
+      if (!oldFile.renameTo(backupFile))  return false;
+      if (!newFile.renameTo(oldFile)) return false;
+      return true;
+    } catch (IOException e) {
+      return false;
+    }
   }
 
   public String nameOf(int i) {
@@ -181,6 +189,7 @@ public class League {
       sb.append(String.format("%-30s", fed.nameOf(id[x], metadata.getYear())));
       sb.append("\t");
       sb.append(stat[x].toString(format.getPpv()));
+
       sb.append(deco[x]);
       sb.append("\n");
       if (i==p1-1) sb.append(Constants.SINGLE_LINE_CONT);
@@ -194,11 +203,21 @@ public class League {
   public String statLine(int i) {
     StringBuilder sb = new StringBuilder();
     sb.append(stat[i].serialize(format.getPpv()));
-    if (pen[i]!=0 || deco[i].length()>0) sb.append(String.format(" %3d %3d", pen[i], pdt[i]));
+    if (stat[i].getPen()!=0 || deco[i].length()>0) {
+      sb.append(String.format(" %3d %3d", stat[i].getPen(), pdt[i]));
+    }
     if (deco[i].length()>0) {
       sb.append(" " + deco[i]);
     }
     return sb.toString();
+  }
+
+  public void countResult(FixtureResult fr) {
+    int i = fr.getFixture().getHome();
+    int j = fr.getFixture().getAway();
+    int s = fr.getPacked();
+    stat[i].addResult(s);
+    stat[j].addReverseResult(s);
   }
 
   public String results(int i, int k) {

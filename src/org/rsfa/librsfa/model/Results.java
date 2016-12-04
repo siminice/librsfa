@@ -47,6 +47,7 @@ public class Results {
   public Collection<FixtureResult> round(int r) {
     return res.stream()
         .filter(x -> x.getFixture().getRound() == r)
+        .sorted(FixtureResult.byDate)
         .collect(Collectors.toList());
   }
 

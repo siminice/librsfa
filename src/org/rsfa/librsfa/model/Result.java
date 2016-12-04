@@ -15,6 +15,10 @@ public class Result {
   private int x = Constants.UNKNOWN;
   private int y = Constants.UNKNOWN;
 
+  public int pack() {
+    return 100*x + y;
+  }
+
   public static Result of(int s) {
     if (s>=0) return new Result(s/100, s%100);
     else return new Result();
