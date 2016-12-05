@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 
 /**
  * Created by radu on 12/1/16.
@@ -12,9 +13,13 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FixtureResult {
+public class FixtureResult implements Comparable<FixtureResult> {
   private Fixture fixture = Fixture.UNKNOWN;
   private TimedResult result = TimedResult.UNKNOWN;
+
+  public int getPacked() {
+    return result.pack();
+  }
 
   public FixtureResult(Fixture f) {
     this.fixture = f;
@@ -45,4 +50,19 @@ public class FixtureResult {
       return "   " + result.serialize();
     }
   }
+
+  @Override
+  public int compareTo(FixtureResult o) {
+    if (this.getResult().getZ() == null) {
+      return o.getResult().getZ() == null? 0 : -1;
+    }
+    if (o.getResult().getZ() == null) return 1;
+    return this.getResult().getZ().compareTo(o.getResult().getZ());
+  }
+
+  public static Comparator<FixtureResult> byDate = new Comparator<FixtureResult>() {
+    public int compare(FixtureResult x, FixtureResult y) {
+      return x.compareTo(y);
+    }
+  };
 }

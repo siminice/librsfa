@@ -18,6 +18,7 @@ public class Stat implements Comparable<Stat> {
   private int los = 0;
   private int gsc = 0;
   private int gre = 0;
+  private int pen = 0;
 
   public void reset() {
     win = drw = los = gsc = gre = 0;
@@ -28,10 +29,10 @@ public class Stat implements Comparable<Stat> {
   }
 
   public int points(final int ppv) {
-    return ppv * win + drw;
+    return ppv * win + drw - pen;
   }
 
-  public int points() { return points(Constants.DEFAULT_PPV); }
+  public int points() { return points(Constants.DEFAULT_PPV) - pen; }
 
   public double pct() {
     final int num = win + drw + los;
@@ -122,6 +123,8 @@ public class Stat implements Comparable<Stat> {
         .append(String.format("%3d", los))
         .append(String.format("%4d", gsc)).append("-").append(String.format("%3d", gre))
         .append(String.format("%4dp", points(ppv))).append("  ");
+    if (pen > 0) { sb.append(String.format("(-%dp pen) ", pen)); }
+    if (pen < 0) { sb.append(String.format("(+%dp bon) ", pen)); }
     return sb.toString();
   }
 

@@ -4,7 +4,6 @@ import lombok.Getter;
 import org.rsfa.librsfa.util.Syntax;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
@@ -29,8 +28,8 @@ public class Fed {
   public void loadClubs(final String ifile, final Syntax style) {
     try {
       final FileInputStream fstream = new FileInputStream(ifile);
-      final DataInputStream dis = new DataInputStream(fstream);
-      final BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+      final InputStreamReader dis = new InputStreamReader(fstream, "ISO-8859-2");
+      final BufferedReader br = new BufferedReader(dis);
       String s = br.readLine();
       final String[] tkh = s.split(" ");
       size = Integer.parseInt(tkh[0]);
@@ -39,7 +38,7 @@ public class Fed {
         s = br.readLine();
         club[i] = Club.parse(s, style);
       }
-      dis.close();
+      br.close();
     } catch (final Exception e) {
       e.printStackTrace();
     }
@@ -48,15 +47,15 @@ public class Fed {
   public void loadAliases(final String afile) {
     try {
       final FileInputStream fstream = new FileInputStream(afile);
-      final DataInputStream dis = new DataInputStream(fstream);
-      final BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+      final InputStreamReader dis = new InputStreamReader(fstream, "ISO-8859-2");
+      final BufferedReader br = new BufferedReader(dis);
       for (int i = 0; i < size; i++) {
         String line = br.readLine();
         if (line != null) {
           club[i].setAlias(AliasTimeline.parse(line));
         }
       }
-      dis.close();
+      br.close();
     } catch (final Exception e) {
       e.printStackTrace();
     }
@@ -65,15 +64,16 @@ public class Fed {
   public void loadChainedAliases(final String afile) {
     try {
       final FileInputStream fstream = new FileInputStream(afile);
-      final DataInputStream dis = new DataInputStream(fstream);
-      final BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+      final InputStreamReader dis = new InputStreamReader(fstream, "ISO-8859-2");
+      final BufferedReader br = new BufferedReader(dis);
+
       for (int i = 0; i < size; i++) {
         String line = br.readLine();
         if (line != null) {
           club[i].setAlias(AliasTimeline.chainedParse(line));
         }
       }
-      dis.close();
+      br.close();
     } catch (final Exception e) {
       e.printStackTrace();
     }
@@ -83,6 +83,10 @@ public class Fed {
     return Stream.of(club)
         .map(c -> c.getAlias())
         .collect(Collectors.toList());
+  }
+
+  public Club getClub(int i) {
+    return (i>=0 && i<size)? club[i] : null;
   }
 
   public String nameOf(final int i, final int y) {
@@ -106,7 +110,7 @@ public class Fed {
     return club[i].getMnem();
   }
 
-  int findMnem(final String s) {
+  public int findMnem(final String s) {
     // start with capital letter;
     final String us = s.substring(0, 1).toUpperCase() + s.substring(1);
     final String ts = us.replaceAll("_", " ");

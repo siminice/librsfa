@@ -4,12 +4,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.rsfa.librsfa.util.Syntax;
 
+import java.util.Collection;
+
 /**
  * Created by radu on 12/1/16.
  */
 public class LeagueTests {
   private String ctty = "rom";
   private String ssn = "a.2017";
+  private String cPath = "resources/"+ctty;
+  private String sFile = cPath+"/"+ssn;
 
   private Fed f;
   private League l;
@@ -17,8 +21,8 @@ public class LeagueTests {
   @Before
   public void Init() {
     f = new Fed(ctty);
-    f.loadClubs("resources/"+ctty+"/teams.dat", Syntax.FIXED);
-    f.loadChainedAliases("resources/"+ctty+"/alias.dat");
+    f.loadClubs(cPath+"/teams.dat", Syntax.FIXED);
+    f.loadChainedAliases(cPath+"/alias.dat");
     l = new League(f);
   }
 
@@ -28,22 +32,30 @@ public class LeagueTests {
 
   @Test
   public void testLoad() {
-    l.load("resources/"+ctty+"/"+ssn);
-
+    l.load(sFile);
     StatSorter sorter = new StatSorter(l);
-    sorter.sort();
-
     System.out.println(l);
-
-    System.out.println("Missing rounds for " + l.nameOf(2) + ": " + l.getRes().availableRounds(2));
-    System.out.println(l.getRes().roundsFreqByTeam(2));
-    System.out.println(l.toString(l.getRes().round(1)));
-
+    int firstRound = l.getRes().firstRound().orElse(1);
+    int lastRound = l.getRes().lastRound().orElse(1);
+    for (int r=firstRound; r<=lastRound; r++) {
+      System.out.println("Round " + r);
+      Collection<FixtureResult> rres = l.getRes().round(r);
+      System.out.println(l.toString(rres));
+      rres.forEach(fr -> l.countResult(fr));
+      sorter.sort();
+      System.out.println(l);
+    }
   }
 
   @Test
   public void testSerialize() {
-    l.load("resources/"+ctty+"/"+ssn);
+    l.load(sFile);
     System.out.println(l.serialize());
+  }
+
+  @Test
+  public void testSave() {
+    l.load(sFile);
+    l.save();
   }
 }
