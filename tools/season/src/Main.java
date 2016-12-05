@@ -25,7 +25,6 @@ public class Main {
     init();
     l.load(args[0]);
     StatSorter sorter = new StatSorter(l);
-    System.out.println(l);
     int firstRound = l.getRes().firstRound().orElse(1);
     int lastRound = l.getRes().lastRound().orElse(1);
     for (int r=firstRound; r<=lastRound; r++) {

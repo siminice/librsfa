@@ -22,6 +22,10 @@ public class Results {
     res = new ArrayList<FixtureResult>();
   }
 
+  public Collection<FixtureResult> getAll() {
+    return res;
+  }
+
   public List<FixtureResult> vs(int i, int j) {
     return res.stream().filter(r ->
         r.getFixture().getHome() == i && r.getFixture().getAway() == j)

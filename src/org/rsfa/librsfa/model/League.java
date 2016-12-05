@@ -9,6 +9,8 @@ import java.io.*;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
+import static org.rsfa.librsfa.util.Constants.UNKNOWN;
+
 /**
  * Created by radu on 11/30/16.
  */
@@ -141,6 +143,43 @@ public class League {
     } catch (IOException e) {
       return false;
     }
+  }
+
+  public int findMnem(final String s) {
+    // start with capital letter;
+    final String us = s.substring(0, 1).toUpperCase() + s.substring(1);
+    final String ts = us.replaceAll("_", " ");
+
+    // exact match
+    for (int i = 0; i < size; ++i) {
+      if (ts.equals(fed.getClub(id[i]).getMnem())) {
+        return i;
+      }
+    }
+
+    // Substring
+    for (int i = 0; i < size; ++i) {
+      if (fed.getClub(id[i]).getMnem().contains(ts)) {
+        return i;
+      }
+    }
+
+    // try uppercase all
+    final String cs = ts.toUpperCase();
+    for (int i = 0; i < size; ++i) {
+      if (fed.getClub(id[i]).getMnem().contains(cs)) {
+        return i;
+      }
+    }
+
+    return UNKNOWN;
+  }
+
+  public int findId(int x) {
+    for (int i=0; i<size; i++) {
+      if (id[i] == x) return i;
+    }
+    return Constants.UNKNOWN;
   }
 
   public String nameOf(int i) {
